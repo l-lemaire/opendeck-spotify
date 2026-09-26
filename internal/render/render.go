@@ -108,15 +108,8 @@ func Key(info Info, o Options) *image.RGBA {
 
 	if o.ShowArt && info.Art != nil {
 		drawCover(img, info.Art)
-		// Darken the lower part so text stays readable over any cover.
-		if showTime || showArtist || showTitle {
-			start := int(top) - 14
-			if start < 20 {
-				start = 20
-			}
-			shade(img, start, Size, 0.75)
-		}
 	}
+	_ = top // the text block height; kept for a possible future layout option
 
 	if showTime {
 		drawLeft(img, clock(info.Position)+" / "+clock(info.Duration), regular, timeSize, 8, y, dimColor)
@@ -171,21 +164,6 @@ func drawCover(dst *image.RGBA, src image.Image) {
 	}
 }
 
-// shade darkens rows from y0 to y1 with a gradient reaching `strength`.
-func shade(img *image.RGBA, y0, y1 int, strength float64) {
-	for y := y0; y < y1; y++ {
-		t := float64(y-y0) / float64(y1-y0)
-		a := strength * (0.2 + 0.8*t)
-		for x := 0; x < Size; x++ {
-			c := img.RGBAAt(x, y)
-			c.R = uint8(float64(c.R) * (1 - a))
-			c.G = uint8(float64(c.G) * (1 - a))
-			c.B = uint8(float64(c.B) * (1 - a))
-			img.SetRGBA(x, y, c)
-		}
-	}
-}
-
 // drawStateBadge draws a small play triangle (paused: press to play) or
 // pause bars (playing) in the top-right corner, on a dark disc.
 func drawStateBadge(img *image.RGBA, playing bool) {
@@ -229,11 +207,17 @@ func face(f *opentype.Font, size float64) font.Face {
 	return fc
 }
 
-// drawLeft draws text at (x, baseline y), truncated with an ellipsis to fit.
+// drawLeft draws text at (x, baseline y), truncated with an ellipsis to
+// fit, with a thin dark outline so it stays readable over any cover.
 func drawLeft(img *image.RGBA, text string, f *opentype.Font, size, x, y float64, col color.Color) {
 	fc := face(f, size)
 	d := &font.Drawer{Dst: img, Src: image.NewUniform(col), Face: fc}
 	text = fit(d, text, Size-int(x)-8)
+	outline := &font.Drawer{Dst: img, Src: image.NewUniform(color.RGBA{0, 0, 0, 0xc8}), Face: fc}
+	for _, off := range [][2]int{{-1, -1}, {1, -1}, {-1, 1}, {1, 1}, {0, -1}, {0, 1}, {-1, 0}, {1, 0}} {
+		outline.Dot = fixed.Point26_6{X: fixed.I(int(x) + off[0]), Y: fixed.I(int(y) + off[1])}
+		outline.DrawString(text)
+	}
 	d.Dot = fixed.Point26_6{X: fixed.I(int(x)), Y: fixed.I(int(y))}
 	d.DrawString(text)
 }
