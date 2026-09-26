@@ -62,7 +62,7 @@ function saveDisplay() {
 function onPluginMessage(payload) {
 	switch (payload.event) {
 		case "status":
-			setStatus("local-status", payload.local ? "Spotify client running" : "Spotify client not running", payload.local ? "ok" : "error");
+			setStatus("local-status", payload.local ? "Spotify client running" : "Spotify client not running", payload.local ? "ok" : "");
 			if (payload.web_api) {
 				setStatus("api-status", "Connected", "ok");
 				$("logout").hidden = false;

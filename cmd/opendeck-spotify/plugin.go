@@ -41,6 +41,9 @@ type plugin struct {
 	state    player.State
 	buttons  map[string]button // by context
 	loggedIn bool
+	// inspector is the key whose panel is open, if any, so status updates
+	// can be pushed to it as things change.
+	inspector *openaction.Event
 	// ownsLocal is true when sources opens a new bus connection per call
 	// (production), so the previous one must be closed on restart. Tests
 	// share one connection and leave it false.
@@ -147,6 +150,17 @@ func (p *plugin) onStateChange(st player.State) {
 	p.mu.Unlock()
 	p.info.Printf("state: source=%s playing=%v loop=%s %q by %s", st.Source, st.Playing, st.Loop, st.Track.Title, st.Track.Artist)
 	p.redrawAll()
+	p.pushStatus()
+}
+
+// pushStatus refreshes the open panel, if any.
+func (p *plugin) pushStatus() {
+	p.mu.Lock()
+	ev := p.inspector
+	p.mu.Unlock()
+	if ev != nil {
+		p.sendStatus(*ev)
+	}
 }
 
 // tick redraws the play/pause keys once a second while music plays and
@@ -267,10 +281,32 @@ func (p *plugin) handlers() openaction.Handlers {
 			return p.onKeyDown(ev)
 		},
 		SendToPlugin: func(ctx context.Context, ev openaction.Event, payload json.RawMessage) error {
+			p.rememberInspector(ev)
 			return p.handleInspectorMessage(ev, payload)
 		},
-		Unknown: func(ctx context.Context, ev openaction.Event) error { return nil },
+		PropertyInspectorDidAppear: func(ctx context.Context, ev openaction.Event) error {
+			p.rememberInspector(ev)
+			return p.sendStatus(ev)
+		},
+		Unknown: func(ctx context.Context, ev openaction.Event) error {
+			if ev.Event == "propertyInspectorDidDisappear" {
+				p.mu.Lock()
+				if p.inspector != nil && p.inspector.Context == ev.Context {
+					p.inspector = nil
+				}
+				p.mu.Unlock()
+			}
+			return nil
+		},
 	}
+}
+
+// rememberInspector records which key's panel is open.
+func (p *plugin) rememberInspector(ev openaction.Event) {
+	p.mu.Lock()
+	e := ev
+	p.inspector = &e
+	p.mu.Unlock()
 }
 
 // track registers a key and draws it right away.

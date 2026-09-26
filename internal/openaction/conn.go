@@ -55,7 +55,7 @@ func (c *Conn) Receive(ctx context.Context) (Event, error) {
 	if err != nil {
 		return Event{}, err
 	}
-	debugf(c.log, "openaction: <- %s", data)
+	debugf(c.log, "openaction: <- %s", abbreviate(data))
 	var ev Event
 	if err := json.Unmarshal(data, &ev); err != nil {
 		return Event{}, fmt.Errorf("host sent invalid JSON: %w", err)
@@ -70,7 +70,7 @@ func (c *Conn) send(ctx context.Context, v any) error {
 	if err != nil {
 		return err
 	}
-	debugf(c.log, "openaction: -> %s", data)
+	debugf(c.log, "openaction: -> %s", abbreviate(data))
 	// A bounded timeout so a stuck host cannot block the plugin forever.
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
@@ -153,6 +153,15 @@ func (c *Conn) OpenURL(ctx context.Context, url string) error {
 	m := openURLMessage{Event: "openUrl"}
 	m.Payload.URL = url
 	return c.send(ctx, m)
+}
+
+// abbreviate keeps debug lines readable: a setImage carries kilobytes of
+// base64 that nobody wants in a log.
+func abbreviate(data []byte) string {
+	if len(data) <= 400 {
+		return string(data)
+	}
+	return fmt.Sprintf("%s…(%d bytes)", data[:300], len(data))
 }
 
 func debugf(l *log.Logger, format string, args ...any) {

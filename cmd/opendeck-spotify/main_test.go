@@ -273,3 +273,14 @@ func TestSettingsHelpers(t *testing.T) {
 		t.Error("foreign action accepted")
 	}
 }
+
+func TestStatusPushedToOpenPanel(t *testing.T) {
+	h := start(t, false)
+	h.push(t, map[string]any{"event": "sendToPlugin", "action": actionPlayPause, "context": "pp", "payload": map[string]any{"event": "status"}})
+	h.expect(t, "sendToPropertyInspector", "pp")
+	h.mp.SetStatus("Playing") // a state change while the panel is open
+	m := h.expect(t, "sendToPropertyInspector", "pp")
+	if payload := m["payload"].(map[string]any); payload["event"] != "status" || payload["source"] != "local" {
+		t.Errorf("pushed status = %v", payload)
+	}
+}
