@@ -48,12 +48,35 @@ func (p *Player) Watch(ctx context.Context, handle func(Event)) error {
 	defer p.conn.RemoveSignal(signals)
 
 	// Initial snapshot.
-	p.emit(ctx, handle, false)
+	running, _ := p.Running()
+	if running {
+		p.emit(ctx, handle, false)
+	} else {
+		handle(Event{Running: false})
+	}
+
+	// Safety net: signals can be missed (a busy bus, a sandbox proxy that
+	// drops the name late), so the ownership is also polled every few
+	// seconds and a change is reported the same way.
+	check := time.NewTicker(5 * time.Second)
+	defer check.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+		case <-check.C:
+			now, err := p.Running()
+			if err != nil || now == running {
+				continue
+			}
+			running = now
+			debugf(p.log, "mpris: ownership poll: running=%v", running)
+			if running {
+				p.emit(ctx, handle, false)
+			} else {
+				handle(Event{Running: false})
+			}
 		case sig, ok := <-signals:
 			if !ok {
 				return nil
@@ -64,7 +87,8 @@ func (p *Player) Watch(ctx context.Context, handle func(Event)) error {
 				if len(sig.Body) == 3 {
 					newOwner, _ := sig.Body[2].(string)
 					debugf(p.log, "mpris: %s owner changed -> %q", p.busName, newOwner)
-					if newOwner == "" {
+					running = newOwner != ""
+					if !running {
 						handle(Event{Running: false})
 						continue
 					}

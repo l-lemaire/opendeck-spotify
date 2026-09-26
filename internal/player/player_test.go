@@ -93,6 +93,14 @@ func TestLocalOnly(t *testing.T) {
 		t.Errorf("position should cap at duration, got %s", got)
 	}
 
+	// A seek changes only the position: it must still be reported so the
+	// display re-syncs its clock.
+	fake.SetPosition(90 * time.Second)
+	st = waitFor(t, states, "seek", func(s State) bool { return s.Position == 90*time.Second })
+	if !st.Playing {
+		t.Errorf("seek state = %+v", st)
+	}
+
 	if err := p.PlayPause(context.Background()); err != nil {
 		t.Fatal(err)
 	}

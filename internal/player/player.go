@@ -251,7 +251,7 @@ func (p *Player) recompute() {
 	default:
 		st = State{Source: SourceNone, At: time.Now()}
 	}
-	changed := !p.notified || !sameState(p.state, st)
+	changed := !p.notified || !sameState(p.state, st) || jumped(p.state, st)
 	p.state = st
 	p.notified = true
 	notify := p.onChange
@@ -268,6 +268,22 @@ func (p *Player) recompute() {
 func sameState(a, b State) bool {
 	a.At, b.At, a.Position, b.Position = time.Time{}, time.Time{}, 0, 0
 	return a == b
+}
+
+// jumped reports whether the new snapshot's position disagrees with where
+// the old one would have advanced to: a seek, a replay from the start, or
+// drift on a remote device. Small differences are the normal jitter of
+// reading a clock twice.
+func jumped(old, cur State) bool {
+	if old.At.IsZero() {
+		return false
+	}
+	expected := old.PositionAt(cur.At)
+	diff := cur.Position - expected
+	if diff < 0 {
+		diff = -diff
+	}
+	return diff > 1500*time.Millisecond
 }
 
 func fromLocal(l mpris.State) State {
