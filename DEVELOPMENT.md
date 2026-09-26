@@ -32,3 +32,13 @@ while Spotify reports no active device and refuses commands with
 `NO_ACTIVE_DEVICE`; naming the device (`device_id`) makes them succeed and
 makes the device active again. The local client appears in the device list
 as a "Computer" named after the host.
+
+## Merged model and rendering
+
+`internal/player` merges both sources under one state with the rule in its
+package comment (local playing wins; otherwise music elsewhere; otherwise the
+paused local client). The running clock is computed locally from the last
+read position (`State.PositionAt`). `internal/render` draws the 144 px key
+with the Go fonts bundled in `golang.org/x/image`; `internal/art` caches
+decoded covers. `spotify-cli key --out file.png` renders the live key for a
+visual check.

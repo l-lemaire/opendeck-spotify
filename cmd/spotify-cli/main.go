@@ -92,6 +92,8 @@ func run(args []string) error {
 		return a.loop(commandArgs)
 	case "devices":
 		return a.devices(commandArgs)
+	case "key":
+		return a.key(commandArgs)
 	case "version":
 		if len(commandArgs) > 0 {
 			return fmt.Errorf("version: unexpected argument %q", commandArgs[0])
@@ -141,6 +143,7 @@ commands:
   auth forget   remove the stored tokens
   loop off|all|one   set the loop mode (web API only: the client ignores it)
   devices       list your Spotify Connect devices
+  key --out F   render the play/pause key image for the current state to F
   version       print the version
 
 global flags (must come before the command):

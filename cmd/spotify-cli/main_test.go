@@ -30,6 +30,8 @@ func TestRunRejectsMalformedArguments(t *testing.T) {
 		{[]string{"loop", "all", "extra"}, `unexpected argument "extra"`},
 		{[]string{"loop", "all", "--device", "x"}, "flags go before the argument"},
 		{[]string{"devices", "extra"}, `unexpected argument "extra"`},
+		{[]string{"key", "extra"}, `unexpected argument "extra"`},
+		{[]string{"key", "--text-scale", "big"}, "invalid value"},
 		// global flags must precede the command
 		{[]string{"status", "--debug"}, "flag provided but not defined"},
 	}
