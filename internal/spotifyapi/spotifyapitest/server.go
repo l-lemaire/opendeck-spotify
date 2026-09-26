@@ -153,10 +153,15 @@ func (s *Server) control(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]any{"error": map[string]any{"status": 403, "message": "Player command failed: Premium required", "reason": "PREMIUM_REQUIRED"}})
 		return
 	}
-	if !s.Active {
+	// Like the real API: without an active device a command fails, unless
+	// it names a device, which then becomes the active one.
+	if !s.Active && r.URL.Query().Get("device_id") == "" {
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(map[string]any{"error": map[string]any{"status": 404, "message": "Player command failed: No active device found", "reason": "NO_ACTIVE_DEVICE"}})
 		return
+	}
+	if r.URL.Query().Get("device_id") != "" {
+		s.Active = true
 	}
 	s.calls = append(s.calls, r.Method+" "+r.URL.Path+"?"+r.URL.RawQuery)
 	switch r.URL.Path {

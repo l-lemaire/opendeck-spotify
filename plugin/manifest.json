@@ -1,0 +1,75 @@
+{
+	"Name": "Spotify controls",
+	"Description": "Play/pause with cover and timing, next, previous and loop mode for Spotify, on this computer or any device.",
+	"Author": "l-lemaire",
+	"Version": "0.1.0",
+	"Icon": "icons/plugin",
+	"Category": "Spotify",
+	"CategoryIcon": "icons/plugin",
+	"CodePaths": {
+		"x86_64-unknown-linux-gnu": "x86_64-unknown-linux-gnu/bin/opendeck-spotify",
+		"aarch64-unknown-linux-gnu": "aarch64-unknown-linux-gnu/bin/opendeck-spotify",
+		"x86_64-apple-darwin": "x86_64-apple-darwin/bin/opendeck-spotify",
+		"aarch64-apple-darwin": "aarch64-apple-darwin/bin/opendeck-spotify",
+		"x86_64-pc-windows-msvc": "x86_64-pc-windows-msvc/bin/opendeck-spotify.exe"
+	},
+	"CodePathLin": "x86_64-unknown-linux-gnu/bin/opendeck-spotify",
+	"CodePathMac": "x86_64-apple-darwin/bin/opendeck-spotify",
+	"CodePathWin": "x86_64-pc-windows-msvc/bin/opendeck-spotify.exe",
+	"OS": [
+		{ "Platform": "linux" },
+		{ "Platform": "mac", "MinimumVersion": "10.11" },
+		{ "Platform": "windows", "MinimumVersion": "10" }
+	],
+	"Actions": [
+		{
+			"UUID": "com.github.l-lemaire.spotify.play-pause",
+			"Name": "Play / Pause",
+			"Tooltip": "Toggle playback; shows the current track",
+			"Icon": "icons/play-pause",
+			"Controllers": ["Keypad"],
+			"SupportedInMultiActions": true,
+			"DisableAutomaticStates": true,
+			"UserTitleEnabled": false,
+			"PropertyInspectorPath": "propertyInspector/index.html",
+			"States": [
+				{ "Image": "icons/play-pause", "Name": "Track", "ShowTitle": false }
+			]
+		},
+		{
+			"UUID": "com.github.l-lemaire.spotify.previous",
+			"Name": "Previous",
+			"Tooltip": "Previous track",
+			"Icon": "icons/previous",
+			"Controllers": ["Keypad"],
+			"SupportedInMultiActions": true,
+			"PropertyInspectorPath": "propertyInspector/index.html",
+			"States": [ { "Image": "icons/previous", "Name": "Previous" } ]
+		},
+		{
+			"UUID": "com.github.l-lemaire.spotify.next",
+			"Name": "Next",
+			"Tooltip": "Next track",
+			"Icon": "icons/next",
+			"Controllers": ["Keypad"],
+			"SupportedInMultiActions": true,
+			"PropertyInspectorPath": "propertyInspector/index.html",
+			"States": [ { "Image": "icons/next", "Name": "Next" } ]
+		},
+		{
+			"UUID": "com.github.l-lemaire.spotify.loop",
+			"Name": "Loop mode",
+			"Tooltip": "Cycle repeat: off, all, one (needs the Spotify login)",
+			"Icon": "icons/loop",
+			"Controllers": ["Keypad"],
+			"SupportedInMultiActions": true,
+			"DisableAutomaticStates": true,
+			"PropertyInspectorPath": "propertyInspector/index.html",
+			"States": [
+				{ "Image": "icons/loop-off", "Name": "Off", "TitleAlignment": "bottom", "FontSize": "9" },
+				{ "Image": "icons/loop-all", "Name": "All", "TitleAlignment": "bottom", "FontSize": "9" },
+				{ "Image": "icons/loop-one", "Name": "One", "TitleAlignment": "bottom", "FontSize": "9" }
+			]
+		}
+	]
+}

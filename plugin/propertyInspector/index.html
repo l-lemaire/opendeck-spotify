@@ -1,0 +1,55 @@
+<!doctype html>
+<!--
+  Property inspector shared by the four actions. Sections:
+    - connection: is the desktop client reachable, is the web API connected,
+      who is in charge right now
+    - Connect Spotify: client id + login through the browser (web API)
+    - display options: play/pause key only
+-->
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="pi.css" />
+		<script src="pi.js"></script>
+	</head>
+	<body>
+		<section id="display" hidden>
+			<div class="row"><label>Show</label>
+				<div class="checks">
+					<label class="check"><input type="checkbox" id="show_art" checked /> Album cover</label>
+					<label class="check"><input type="checkbox" id="show_title" checked /> Title</label>
+					<label class="check"><input type="checkbox" id="show_artist" checked /> Artist</label>
+					<label class="check"><input type="checkbox" id="show_time" checked /> Time</label>
+					<label class="check"><input type="checkbox" id="show_progress" checked /> Progress bar</label>
+				</div>
+			</div>
+			<div class="row"><label for="text_scale">Text size</label>
+				<select id="text_scale">
+					<option value="0.85">Small</option>
+					<option value="1" selected>Normal</option>
+					<option value="1.2">Large</option>
+					<option value="1.4">Larger</option>
+				</select>
+			</div>
+			<p class="hint">Time and progress redraw the key every second while playing.</p>
+		</section>
+
+		<section id="connection">
+			<div class="row"><label>This computer</label><p id="local-status" class="status busy">Checking…</p></div>
+			<div class="row"><label>Web API</label><p id="api-status" class="status">…</p></div>
+			<div class="row"><label>Now</label><p id="now-status" class="status">…</p></div>
+			<p class="hint" id="api-hint">The web API controls Spotify on any device and is needed for the loop mode. It requires a Spotify Premium account and an app on developer.spotify.com/dashboard with the redirect URI <code>http://127.0.0.1:8765/callback</code>.</p>
+			<div id="login-form">
+				<div class="row"><label for="client_id">Client id</label><input id="client_id" type="text" placeholder="from your app's settings" /></div>
+				<div class="row"><label></label>
+					<div class="actions">
+						<button id="login" type="button">Connect Spotify</button>
+						<button id="logout" type="button" class="link" hidden>Disconnect</button>
+					</div>
+				</div>
+				<p id="login-status" class="status"></p>
+			</div>
+			<div class="row"><label></label><button id="refresh" type="button" class="link">Refresh</button></div>
+		</section>
+	</body>
+</html>

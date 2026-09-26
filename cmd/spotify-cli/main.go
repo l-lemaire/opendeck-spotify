@@ -94,6 +94,8 @@ func run(args []string) error {
 		return a.devices(commandArgs)
 	case "key":
 		return a.key(commandArgs)
+	case "plugin":
+		return a.plugin(commandArgs)
 	case "version":
 		if len(commandArgs) > 0 {
 			return fmt.Errorf("version: unexpected argument %q", commandArgs[0])
@@ -144,6 +146,8 @@ commands:
   loop off|all|one   set the loop mode (web API only: the client ignores it)
   devices       list your Spotify Connect devices
   key --out F   render the play/pause key image for the current state to F
+  plugin status        where the OpenDeck plugin is installed and logs
+  plugin debug on|off  toggle full debug output in the plugin log
   version       print the version
 
 global flags (must come before the command):
