@@ -322,10 +322,9 @@ func (p *plugin) onKeyDown(ev openaction.Event) error {
 			p.conn.ShowAlert(ctx, ev.Context)
 			return
 		}
+		// No "ok" flash: the keys redraw from the state change, which is
+		// feedback enough. Only failures are shown.
 		p.info.Printf("%s sent (%s)", shortAction(ev.Action), st.Source)
-		if ev.Action == actionNext || ev.Action == actionPrevious {
-			p.conn.ShowOk(ctx, ev.Context)
-		}
 	}()
 	return nil
 }

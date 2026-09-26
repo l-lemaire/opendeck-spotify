@@ -199,7 +199,14 @@ func TestNextPreviousKeys(t *testing.T) {
 	if call := h.call(t); call != "Next" {
 		t.Errorf("call = %s", call)
 	}
-	h.expect(t, "showOk", "n")
+	// No feedback flash is sent on success; only failures alert.
+	select {
+	case m := <-h.sent:
+		if m["event"] == "showOk" || m["event"] == "showAlert" {
+			t.Errorf("unexpected feedback %v", m)
+		}
+	case <-time.After(300 * time.Millisecond):
+	}
 	h.push(t, keyDown(actionPrevious, "pv"))
 	if call := h.call(t); call != "Previous" {
 		t.Errorf("call = %s", call)

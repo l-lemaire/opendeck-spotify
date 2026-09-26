@@ -83,29 +83,51 @@ func Key(info Info, o Options) *image.RGBA {
 		return img
 	}
 
-	if o.ShowArt && info.Art != nil {
-		drawCover(img, info.Art)
-		// Darken the lower part so text stays readable over any cover.
-		if o.ShowTitle || o.ShowArtist || o.ShowTime {
-			shade(img, 70, Size, 0.72)
-		}
-	}
+	// Font sizes at scale 1, and the line heights that go with them.
+	titleSize, artistSize, timeSize := 17*o.TextScale, 14*o.TextScale, 13*o.TextScale
 
-	// Text block, bottom-aligned above the progress bar.
+	// Work out how tall the text block is, bottom-aligned above the bar,
+	// so the shaded band can start just above it.
 	y := float64(Size) - 8
 	if o.ShowProgress {
 		y -= 8
 	}
-	if o.ShowTime && info.Duration > 0 {
-		drawLeft(img, clock(info.Position)+" / "+clock(info.Duration), regular, 11*o.TextScale, 8, y, dimColor)
-		y -= 15 * o.TextScale
+	top := y
+	showTime := o.ShowTime && info.Duration > 0
+	showArtist := o.ShowArtist && info.Artist != ""
+	showTitle := o.ShowTitle && info.Title != ""
+	if showTime {
+		top -= timeSize * 1.35
 	}
-	if o.ShowArtist && info.Artist != "" {
-		drawLeft(img, info.Artist, regular, 12*o.TextScale, 8, y, dimColor)
-		y -= 16 * o.TextScale
+	if showArtist {
+		top -= artistSize * 1.35
 	}
-	if o.ShowTitle && info.Title != "" {
-		drawLeft(img, info.Title, bold, 14*o.TextScale, 8, y, textColor)
+	if showTitle {
+		top -= titleSize * 1.35
+	}
+
+	if o.ShowArt && info.Art != nil {
+		drawCover(img, info.Art)
+		// Darken the lower part so text stays readable over any cover.
+		if showTime || showArtist || showTitle {
+			start := int(top) - 14
+			if start < 20 {
+				start = 20
+			}
+			shade(img, start, Size, 0.75)
+		}
+	}
+
+	if showTime {
+		drawLeft(img, clock(info.Position)+" / "+clock(info.Duration), regular, timeSize, 8, y, dimColor)
+		y -= timeSize * 1.35
+	}
+	if showArtist {
+		drawLeft(img, info.Artist, regular, artistSize, 8, y, dimColor)
+		y -= artistSize * 1.35
+	}
+	if showTitle {
+		drawLeft(img, info.Title, bold, titleSize, 8, y, textColor)
 	}
 
 	if o.ShowProgress && info.Duration > 0 {
