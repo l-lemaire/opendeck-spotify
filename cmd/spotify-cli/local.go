@@ -35,8 +35,13 @@ func (a *app) connectLocal() (*mpris.Player, error) {
 func (a *app) status(args []string) error {
 	fs := flag.NewFlagSet("spotify-cli status", flag.ContinueOnError)
 	asJSON := fs.Bool("json", false, "print the state as JSON")
+	remote := fs.Bool("remote", false, "ask Spotify's web API instead of the local client (any device)")
+	backend := fs.String("store", "auto", "credential store for --remote: auto, keyring or file")
 	if err := parseFlags(fs, args); err != nil {
 		return err
+	}
+	if *remote {
+		return a.remoteStatus(*backend, *asJSON)
 	}
 	p, err := a.connectLocal()
 	if err != nil {
@@ -48,12 +53,7 @@ func (a *app) status(args []string) error {
 		return err
 	}
 	if *asJSON {
-		out, err := json.MarshalIndent(st, "", "  ")
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(out))
-		return nil
+		return printJSON(st)
 	}
 	printState(st)
 	return nil
@@ -72,12 +72,21 @@ func printState(st mpris.State) {
 func (a *app) control(verb string, args []string) error {
 	fs := flag.NewFlagSet("spotify-cli "+verb, flag.ContinueOnError)
 	dryRun := fs.Bool("dry-run", false, "print what would be sent instead of sending it")
+	remote := fs.Bool("remote", false, "send through Spotify's web API (controls whichever device is active)")
+	backend := fs.String("store", "auto", "credential store for --remote: auto, keyring or file")
 	if err := parseFlags(fs, args); err != nil {
 		return err
 	}
 	if *dryRun {
-		fmt.Printf("dry run: would call %s on %s\n", mprisMethod(verb), mpris.SpotifyBusName)
+		if *remote {
+			fmt.Printf("dry run: would send %s to Spotify's web API\n", verb)
+		} else {
+			fmt.Printf("dry run: would call %s on %s\n", mprisMethod(verb), mpris.SpotifyBusName)
+		}
 		return nil
+	}
+	if *remote {
+		return a.remoteControl(verb, *backend)
 	}
 	p, err := a.connectLocal()
 	if err != nil {

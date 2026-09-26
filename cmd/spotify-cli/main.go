@@ -86,6 +86,12 @@ func run(args []string) error {
 		return a.control(command, commandArgs)
 	case "watch":
 		return a.watch(commandArgs)
+	case "auth":
+		return a.auth(commandArgs)
+	case "loop":
+		return a.loop(commandArgs)
+	case "devices":
+		return a.devices(commandArgs)
 	case "version":
 		if len(commandArgs) > 0 {
 			return fmt.Errorf("version: unexpected argument %q", commandArgs[0])
@@ -119,12 +125,22 @@ func parseFlags(fs *flag.FlagSet, args []string) error {
 func printUsage(fs *flag.FlagSet) {
 	fmt.Fprint(fs.Output(), `usage: spotify-cli [global flags] <command> [command flags]
 
-commands (local Spotify desktop client, through MPRIS):
+commands:
   status        what is playing: track, artist, position, loop mode
   play-pause    toggle playback
   next          next track
   previous      previous track
-  watch         print changes as the client reports them, until Ctrl-C
+  watch         print changes as the local client reports them, until Ctrl-C
+
+  The four above talk to the Spotify desktop client on this machine.
+  Add --remote to go through Spotify's web API instead: that controls
+  whichever device is playing. --remote needs a login:
+
+  auth          log in to Spotify in the browser (once): auth --client-id <id>
+  auth status   show the login state and the active device
+  auth forget   remove the stored tokens
+  loop off|all|one   set the loop mode (web API only: the client ignores it)
+  devices       list your Spotify Connect devices
   version       print the version
 
 global flags (must come before the command):

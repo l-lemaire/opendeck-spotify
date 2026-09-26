@@ -16,3 +16,13 @@ not pushed, and loop/shuffle writes are ignored by Spotify.
 make build          # bin/spotify-cli
 make check          # gofmt, go vet, tests (the MPRIS tests need a session bus; they skip without one)
 ```
+
+## Remote control: Spotify Web API
+
+`internal/spotifyapi`: PKCE login through a callback on `http://127.0.0.1:8765/callback`
+(the redirect URI registered in the developer dashboard; `localhost` is not
+accepted by Spotify), tokens in the keyring under `opendeck-spotify`, automatic
+refresh with rotation, `GET /me/player`, transport controls, repeat mode,
+devices. Control endpoints need Premium; development-mode apps require the
+owner to have Premium. Tests run against `spotifyapitest`, a fake of the
+accounts and API endpoints.
