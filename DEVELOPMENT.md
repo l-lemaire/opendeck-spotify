@@ -42,3 +42,19 @@ read position (`State.PositionAt`). `internal/render` draws the 144 px key
 with the Go fonts bundled in `golang.org/x/image`; `internal/art` caches
 decoded covers. `spotify-cli key --out file.png` renders the live key for a
 visual check.
+
+## Plugin
+
+`cmd/opendeck-spotify`: the merged player runs inside the plugin; keys redraw
+on every state change and, while playing, once a second for keys showing time
+or progress. The panel's status is pushed on state changes. The web API login
+from the panel uses OpenDeck's `openUrl` to open the browser. Tests run the
+plugin between a fake OpenDeck, a fake MPRIS player on the session bus and a
+fake Spotify API.
+
+## Release
+
+```
+git tag -a vX.Y.Z -m "..."
+make plugin-release     # dist/opendeck-spotify-X.Y.Z.streamDeckPlugin + spotify-cli-X.Y.Z-<triple> archives
+```
