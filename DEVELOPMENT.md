@@ -26,3 +26,9 @@ refresh with rotation, `GET /me/player`, transport controls, repeat mode,
 devices. Control endpoints need Premium; development-mode apps require the
 owner to have Premium. Tests run against `spotifyapitest`, a fake of the
 accounts and API endpoints.
+
+Verified on the real account: after the local client has been paused for a
+while Spotify reports no active device and refuses commands with
+`NO_ACTIVE_DEVICE`; naming the device (`device_id`) makes them succeed and
+makes the device active again. The local client appears in the device list
+as a "Computer" named after the host.

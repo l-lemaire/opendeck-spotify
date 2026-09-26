@@ -242,6 +242,7 @@ func (a *app) remoteControl(verb, backend string) error {
 func (a *app) loop(args []string) error {
 	fs := flag.NewFlagSet("spotify-cli loop", flag.ContinueOnError)
 	backend := fs.String("store", secrets.BackendAuto, "credential store: auto, keyring or file")
+	device := fs.String("device", "", "target this device (name or id) instead of the active one; needed when nothing is playing")
 	pos, err := parseArgs(fs, args, 1, "mode (off, all or one)")
 	if err != nil {
 		return err
@@ -261,11 +262,39 @@ func (a *app) loop(args []string) error {
 	if err != nil {
 		return err
 	}
-	if err := c.SetRepeat(a.ctx, mode, ""); err != nil {
+	deviceID := ""
+	if *device != "" {
+		if deviceID, err = resolveDevice(a, c, *device); err != nil {
+			return err
+		}
+	}
+	if err := c.SetRepeat(a.ctx, mode, deviceID); err != nil {
 		return err
 	}
 	fmt.Println("loop:", pos[0])
 	return nil
+}
+
+// resolveDevice matches a device name or id among the user's devices.
+func resolveDevice(a *app, c *spotifyapi.Client, query string) (string, error) {
+	devices, err := c.Devices(a.ctx)
+	if err != nil {
+		return "", err
+	}
+	q := strings.ToLower(query)
+	var prefix []spotifyapi.Device
+	for _, d := range devices {
+		if d.ID == query || strings.ToLower(d.Name) == q {
+			return d.ID, nil
+		}
+		if strings.HasPrefix(strings.ToLower(d.Name), q) {
+			prefix = append(prefix, d)
+		}
+	}
+	if len(prefix) == 1 {
+		return prefix[0].ID, nil
+	}
+	return "", fmt.Errorf("no single device matches %q (see `spotify-cli devices`)", query)
 }
 
 // devices implements `spotify-cli devices`.
